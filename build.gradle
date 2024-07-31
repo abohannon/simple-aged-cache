@@ -29,3 +29,10 @@ compileTestKotlin {
 java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(17))
 }
+
+test {
+    testLogging {
+        events "passed", "skipped", "failed"
+        showStandardStreams = true
+    }
+}

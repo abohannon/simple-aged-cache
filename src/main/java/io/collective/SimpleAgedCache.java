@@ -1,7 +1,6 @@
 package io.collective;
 
 import java.time.Clock;
-import java.util.Arrays;
 
 public class SimpleAgedCache {
     private Clock clock;
@@ -11,16 +10,19 @@ public class SimpleAgedCache {
     public SimpleAgedCache(Clock clock) {
       this.clock = clock;
       this.cache = new ExpirableEntry[100];
-      System.out.println(Arrays.toString(this.cache));
+      this.size = 0;
     }
 
     public SimpleAgedCache() {
-
+      this(Clock.systemUTC());
     }
 
     public void put(Object key, Object value, int retentionInMillis) {
       long retentionTime = clock.millis() + retentionInMillis;
+
       ExpirableEntry entry = new ExpirableEntry(key, value, retentionTime);
+      System.out.println("entry: " + entry);
+      System.out.println("entry.key: " + entry.key);
       cache[size++] = entry;
     }
 
@@ -29,10 +31,32 @@ public class SimpleAgedCache {
     }
 
     public int size() {
-        return 0;
+      long currentTime = clock.millis();
+
+      for (int i = 0; i < size; i++) {
+        ExpirableEntry entry = cache[i];
+
+        if (entry.isExpired(currentTime)) {
+          cache[i] = cache[size - 1];
+          cache[size - 1] = null;
+          size--;
+        }
+      }
+
+      return size;
     }
 
     public Object get(Object key) {
+        long currentTime = clock.millis();
+
+        for (int i = 0; i < size; i++) {
+          ExpirableEntry entry = cache[i];
+
+          if (entry.key.equals(key) && entry.retentionTime > currentTime) {
+            return entry.value;
+          }
+        }
+
         return null;
     }
 
@@ -45,6 +69,10 @@ public class SimpleAgedCache {
             this.key = key;
             this.value = value;
             this.retentionTime = retentionTime;
+        }
+
+        boolean isExpired(long currentTime) {
+          return currentTime > retentionTime;
         }
     }
 }
