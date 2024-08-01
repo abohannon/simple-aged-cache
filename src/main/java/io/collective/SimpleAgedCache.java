@@ -21,8 +21,7 @@ public class SimpleAgedCache {
       long retentionTime = clock.millis() + retentionInMillis;
 
       ExpirableEntry entry = new ExpirableEntry(key, value, retentionTime);
-      System.out.println("entry: " + entry);
-      System.out.println("entry.key: " + entry.key);
+
       cache[size++] = entry;
     }
 
